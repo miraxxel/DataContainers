@@ -261,7 +261,34 @@ public:
 
 		size--;
 	}
+	void erase(int Index)
+	{
+		if (Index > size)
+		{
+			cout << "Error: out of range" << endl;
+			return;
+		}
+		if (Index == 0) {
+			Element* Temp = Head;
+			Head = Head->pNext;
+			delete Temp;
+			return;
+		}
 
+		// доходим до нужного эл-та
+		Element* Current = Head;
+		for (int i = 0; i < Index - 1; i++)
+		{
+			Current = Current->pNext;
+		}
+
+		// удаляем элемент по индексу
+		Element* Erased = Current->pNext;
+		Current->pNext = Erased->pNext;
+		delete Erased;
+
+		size--;
+	}
 
 
 	//			Methods:
@@ -308,13 +335,13 @@ void Print(int arr[])
 	// но в функ. попадает только укзаатель на первый элемент, и вычесть размер массива не получится
 }
 
-//#define BASE_CHECK
+#define BASE_CHECK
 //#define COUNT_CHECK
 //#define SIZE_CONSTRUCTOR_CHECK
 //#define OPERAROR_PLUS_CHECK
 //#define INITIALIZER_LIST_CONSTRUCTOR_CHECK
 //#define RANGE_BASED_FOR_ARRAY
-#define RANGE_BASED_FOR_LIST
+//#define RANGE_BASED_FOR_LIST
 void main()
 {
 	setlocale(LC_ALL, "");
@@ -335,15 +362,16 @@ void main()
 	list.pop_front();
 	list.print();*/
 
-	/*int index;
-	int value;
+	int index;
+	//int value;
 	cout << "индекс: "; cin >> index;
-	cout << "значение: "; cin >> value;
-	list.insert(index, value);
-	list.print();*/
+	/*cout << "значение: "; cin >> value;
+	list.insert(index, value);*/
+	list.erase(index);
+	list.print();
 
-	ForwardList list2 = list; // CopyConstructor
-	list2.print();
+	//ForwardList list2 = list; // CopyConstructor
+	//list2.print();
 #endif // BASE_CHECK  
 
 #ifdef COUNT_CHECK
