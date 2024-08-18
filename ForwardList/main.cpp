@@ -41,10 +41,16 @@ public:
 	{
 		cout << "IDestructor:\t" << this << endl;
 	}
-	Iterator& operator++() 
+	Iterator& operator++() // префиксная
 	{
 		Temp = Temp->pNext;
 		return *this;
+	}
+	Iterator operator++(int) // постфиксная форма
+	{
+		Iterator old = *this;
+		Temp = Temp->pNext;
+		return old;
 	}
 	// операторы сравнения возвращают булевое значение
 	bool operator==(const Iterator& other)const
@@ -335,13 +341,13 @@ void Print(int arr[])
 	// но в функ. попадает только укзаатель на первый элемент, и вычесть размер массива не получится
 }
 
-#define BASE_CHECK
+//#define BASE_CHECK
 //#define COUNT_CHECK
 //#define SIZE_CONSTRUCTOR_CHECK
 //#define OPERAROR_PLUS_CHECK
 //#define INITIALIZER_LIST_CONSTRUCTOR_CHECK
 //#define RANGE_BASED_FOR_ARRAY
-//#define RANGE_BASED_FOR_LIST
+#define RANGE_BASED_FOR_LIST
 void main()
 {
 	setlocale(LC_ALL, "");
@@ -465,10 +471,13 @@ ForwardList list(5);
 	for (int i : list) 
 	{
 		cout << i << tab;
+	} // неявно исп. operator++, operator!=, operator*()const - если они не будут перегружены, r-b for не будет работать
+	cout << endl;
+	for (Iterator it = list.begin(); it != list.end(); ++it)
+	{
+		cout << *it << tab;
 	}
 	cout << endl;
-	// подсказка в соо об ошибках + constructor 
-	// (нужен begin и end)
 #endif // RANGE_BASED_FOR_LIST
 	
 }
