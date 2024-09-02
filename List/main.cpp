@@ -2,30 +2,22 @@
 using namespace std;
 
 #define tab "\t"
+#define delimiter "\n----------------------------------------------------------\n"
 
+template<typename T>
 class List
 {
 	// прмяо внутри list мы можем описать структуру элемента, т.к. эти элементы, нигде кроме это листа не исп-ся
 	class Element
 	{
-		int Data; // значение эл-та
+		T Data; // значение эл-та
 		Element* pNext; // указатель на след. эл-т
 		Element* pPrev; // указатель на предыдущ. эл-т
 	public:
 		// конструктор и деструктор, нужны чтобы мы видели, когда создаются и удаляются элементы
-		Element(int Data, Element* pNext = nullptr, Element* pPrev = nullptr)
-			:Data(Data), pNext(pNext), pPrev(pPrev)
-		{
-#ifdef DEBUG
-			cout << "EConstructor:\t" << this << endl;
-#endif // DEBUG
-		}
-		~Element()
-		{
-#ifdef DEBUG
-			cout << "EDestructor:\t" << this << endl;
-#endif // DEBUG
-		}
+		Element(T Data, Element* pNext = nullptr, Element* pPrev = nullptr)
+			:Data(Data), pNext(pNext), pPrev(pPrev) {}
+		~Element() {}
 		friend class List; // для того, чтобы мы из List, имели прямой доступ к внутренностям Element, 
 		// не смотря на то, что второй находится внутри первого.
 	}*Head, * Tail; // объекты класса (или указатели на них) можно объявлять непосредственно после описания класса.
@@ -53,7 +45,7 @@ class List
 			return this->Temp != other.Temp;
 		}
 
-		const int& operator*()const // вызывается для константного объекта
+		const T& operator*()const // вызывается для константного объекта
 		{
 			return Temp->Data;
 		}
@@ -68,24 +60,24 @@ public:
 
 		ConstIterator& operator++()
 		{
-			Temp = Temp->pNext;
+			ConstBaseIterator::Temp = ConstBaseIterator::Temp->pNext;
 			return *this;
 		}
 		ConstIterator operator++(int)
 		{
 			ConstIterator old = *this;
-			Temp = Temp->pNext;
+			ConstBaseIterator::Temp = ConstBaseIterator::Temp->pNext;
 			return old;
 		}
 		ConstIterator& operator--()
 		{
-			Temp = Temp->pPrev;
+			ConstBaseIterator::Temp = ConstBaseIterator::Temp->pPrev;
 			return *this;
 		}
 		ConstIterator operator--(int)
 		{
 			ConstIterator old = *this;
-			Temp = Temp->pPrev;
+			ConstBaseIterator::Temp = ConstBaseIterator::Temp->pPrev;
 			return old;
 		}
 
@@ -105,25 +97,25 @@ public:
 		//		Increment/Decrement
 		ConstReverseIterator& operator++()
 		{
-			Temp = Temp->pPrev;
+			ConstBaseIterator::Temp = ConstBaseIterator::Temp->pPrev;
 			return *this;
 		}
 		ConstReverseIterator operator++(int)
 		{
 			ConstReverseIterator old = *this;
-			Temp = Temp->pPrev;
+			ConstBaseIterator::Temp = ConstBaseIterator::Temp->pPrev;
 			return old;
 		}
 
 		ConstReverseIterator& operator--()
 		{
-			Temp = Temp->pNext;
+			ConstBaseIterator::Temp = ConstBaseIterator::Temp->pNext;
 			return *this;
 		}
 		ConstReverseIterator operator--(int)
 		{
 			ConstReverseIterator old = *this;
-			Temp = Temp->pNext;
+			ConstBaseIterator::Temp = ConstBaseIterator::Temp->pNext;
 			return old;
 		}
 	};
@@ -135,14 +127,14 @@ public:
 	public:
 		Iterator(Element* Temp = nullptr):ConstIterator(Temp){}
 		~Iterator(){}
-		int& operator*() { return Temp->Data; }
+		T& operator*() { return ConstBaseIterator::Temp->Data; }
 	};
 	class ReverseIterator :public ConstReverseIterator 
 	{
 	public:
 		ReverseIterator(Element* Temp = nullptr):ConstReverseIterator(Temp) {}
 		~ReverseIterator() {}
-		int& operator*() { return Temp->Data; }
+		T& operator*() { return ConstBaseIterator::Temp->Data; }
 	};
 
 	// begin - константный метод возвращаюищий константный итератор
@@ -185,15 +177,15 @@ public:
 		cout << "LConstructor:\t" << this << endl;
 	}
 	// передаем по ссылке, чтобы не отрабатывал конструктор копирования, т.к. initializer_list контейнер, под него не нужно выделять память, нам нужно чтобы он принял в себя переданные объекты
-	List(const std::initializer_list<int>& il) :List()
+	List(const std::initializer_list<T>& il) :List()
 	{
-		for (int const* it = il.begin(); it != il.end(); ++it) // префиксный инкремент быстрее, т.к. не создает лишний объект
+		for (T const* it = il.begin(); it != il.end(); ++it) // префиксный инкремент быстрее, т.к. не создает лишний объект
 		{
 			push_back(*it);
 			//push_front(*it);
 		}
 	}
-	List(const List& other) :List()
+	List(const List<T>& other) :List()
 	{
 		*this = other;
 		cout << "CopyConstructor:" << this << endl;
@@ -205,7 +197,7 @@ public:
 	}
 
 	//			Operators:
-	List& operator=(const List& other)
+	List<T>& operator=(const List<T>& other)
 	{
 		if (this == &other)return *this;
 		while (Head)pop_front();
@@ -215,7 +207,7 @@ public:
 	}
 
 	//			Adding element:
-	void push_front(int Data)
+	void push_front(T Data)
 	{
 		if (Head == nullptr && Tail == nullptr)
 			Head = Tail = new Element(Data);
@@ -235,7 +227,7 @@ public:
 
 		size++;
 	}
-	void push_back(int Data)
+	void push_back(T Data)
 	{
 		// сразу же проверяем не пуст ли список
 		if (Head == nullptr && Tail == nullptr)
@@ -254,7 +246,8 @@ public:
 		}
 		size++;
 	}
-	void insert(int Data, int Index)
+	// перед index вместо int обычно пишется size_t
+	void insert(T Data, int Index)
 	{
 		if (Index > size)return;
 		if (Index == 0)return push_front(Data);
@@ -334,9 +327,10 @@ public:
 		cout << "Кол-во эл-ов в списке: " << size << endl;
 	}
 };
-List operator+(const List& left, const List& right)
+
+template<typename T>List<T> operator+(const List<T>& left, const List<T>& right)
 {
-	List buffer = left;
+	List<T> buffer = left;
 	for (List::ConstIterator it = right.begin(); it != right.end(); ++it)
 	{
 		buffer.push_back(*it);
@@ -347,7 +341,7 @@ List operator+(const List& left, const List& right)
 
 //#define BASE_CHECK
 //#define ITERATORS_CHECK
-#define OPERATOR_PLUS_CHECK
+//#define OPERATOR_PLUS_CHECK
 
 void main()
 {
@@ -409,5 +403,29 @@ void main()
 	for (int i : list3) cout << i << tab; cout << endl;
 #endif // OPERATOR_PLUS_CHECK
 
+	List<int> i_list = { 3, 5, 8, 13, 21 };
+	for (int i : i_list)cout << i << tab; cout << endl;
+	for(List<int>::Iterator it = i_list.begin(); it != i_list.end(); ++it)
+		cout << *it << tab;	cout << endl;
+	for (List<int>::ReverseIterator it = i_list.rbegin(); it != i_list.rend(); ++it)
+		cout << *it << tab; cout << endl;
+	cout << delimiter << endl;
+	//////////////////////////////////////////////////////////////////////////////////////
 
+	List<double> d_list = { 2.7, 3.14, 5.5, 8.3 };
+	for (double i : d_list)cout << i << tab; cout << endl;
+	for (List<double>::Iterator it = d_list.begin(); it != d_list.end(); ++it)
+		cout << *it << tab;	cout << endl;
+	for (List<double>::ReverseIterator it = d_list.rbegin(); it != d_list.rend(); ++it)
+		cout << *it << tab; cout << endl;
+	cout << delimiter << endl;
+	/////////////////////////////////////////////////////////////////////////////////////
+
+	List<std::string> s_list = { "Хорошо", "живёт", "на", "свете", "Винни", "Пух" };
+	for (std::string i : s_list)cout << i << tab; cout << endl;
+	for (List<std::string>::Iterator it = s_list.begin(); it != s_list.end(); ++it)
+		cout << *it << tab; cout << endl;
+	for (List<std::string>::ReverseIterator it = s_list.rbegin(); it != s_list.rend(); ++it)
+		cout << *it << tab; cout << endl;
+	cout << delimiter << endl;
 }
